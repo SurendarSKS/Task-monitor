@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Daily Activity Logger</title>
+  <style>
+    body { background:#111; color:white; font-family:Arial; padding:20px; }
+    .box { background:#222; padding:20px; border-radius:10px; width:350px; margin:auto; }
+    button { background:#00e0ff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; }
+    input, textarea { width:100%; padding:10px; margin-top:10px; border-radius:5px; border:none;}
+    .entry { background:#1c1c1c; padding:15px; margin-top:10px; border-radius:10px; }
+  </style>
+</head>
+<body>
+
+<div id="loginBox" class="box">
+  <h2>Login</h2>
+  <input type="password" id="code" placeholder="Enter Secret Code">
+  <br><br>
+  <button onclick="login()">Login</button>
+  <p id="msg"></p>
+</div>
+
+<div id="mainUI" style="display:none;">
+  <h2>Daily Activity Logger</h2>
+
+  <div class="box">
+    <input type="date" id="date">
+    <input type="text" id="time" placeholder="Time Slot (Ex: 2PM - 4PM)">
+    <textarea id="activity" placeholder="What did you do?"></textarea>
+    <br><br>
+    <button onclick="save()">Save</button>
+  </div>
+
+  <h3>Recent Entries</h3>
+  <div id="list"></div>
+</div>
+
+<script>
+const api = "https://script.google.com/macros/s/AKfycbzcFcXl7zPs5QTFtlSN8zI6YfT1d9_n_yuiXWQz9tbn--aysn3vGil8jPxhS1ecNf0/exec";
+
+function login() {
+  let code = document.getElementById("code").value;
+
+  fetch(api, {
+    method: "POST",
+    body: new URLSearchParams({
+      action: "login",
+      code: code
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("mainUI").style.display = "block";
+      load();
+    } else {
+      document.getElementById("msg").innerText = "❌ Wrong code!";
+    }
+  });
+}
+
+function save() {
+  fetch(api, {
+    method: "POST",
+    body: new URLSearchParams({
+      action: "save",
+      date: document.getElementById("date").value,
+      time: document.getElementById("time").value,
+      activity: document.getElementById("activity").value
+    })
+  }).then(() => {
+    alert("Saved!");
+    load();
+  });
+}
+
+function load() {
+  fetch(api)
+  .then(r => r.json())
+  .then(data => {
+    let html = "";
+    data.forEach((row, i) => {
+      html += `
+      <div class="entry">
+        <b>${row[1]}</b> | ${row[2]} <br>
+        ${row[3]} <br><br>
+      </div>`;
+    });
+
+    document.getElementById("list").innerHTML = html;
+  });
+}
+</script>
+
+</body>
+</html>
