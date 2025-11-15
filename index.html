@@ -1,95 +1,139 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Daily Activity Logger</title>
-  <style>
-    body { background:#111; color:white; font-family:Arial; padding:20px; }
-    .box { background:#222; padding:20px; border-radius:10px; width:350px; margin:auto; }
-    button { background:#00e0ff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; }
-    input, textarea { width:100%; padding:10px; margin-top:10px; border-radius:5px; border:none;}
-    .entry { background:#1c1c1c; padding:15px; margin-top:10px; border-radius:10px; }
-  </style>
+<meta charset="UTF-8">
+<title>Daily Activity Logger</title>
+<style>
+    body {
+        margin:0;
+        padding:0;
+        background:#0f0f0f;
+        color:white;
+        font-family:Arial, sans-serif;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        min-height:100vh;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 450px;
+        background:#1a1a1a;
+        padding:25px;
+        border-radius:15px;
+        box-shadow:0 0 20px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+        text-align:center;
+    }
+
+    input, textarea {
+        width:100%;
+        padding:12px;
+        margin-top:10px;
+        background:#2a2a2a;
+        border:none;
+        border-radius:8px;
+        color:white;
+    }
+
+    button {
+        width:100%;
+        padding:12px;
+        margin-top:15px;
+        background:#00c8ff;
+        border:none;
+        border-radius:8px;
+        font-weight:bold;
+        cursor:pointer;
+    }
+
+    .entry {
+        background:#242424;
+        padding:15px;
+        border-radius:10px;
+        margin-top:12px;
+    }
+</style>
 </head>
 <body>
 
-<div id="loginBox" class="box">
-  <h2>Login</h2>
-  <input type="password" id="code" placeholder="Enter Secret Code">
-  <br><br>
-  <button onclick="login()">Login</button>
-  <p id="msg"></p>
+<div id="loginBox" class="container">
+    <h2>Login</h2>
+    <input type="password" id="code" placeholder="Enter Secret Code">
+    <button onclick="login()">Login</button>
+    <p id="msg" style="color:red;"></p>
 </div>
 
-<div id="mainUI" style="display:none;">
-  <h2>Daily Activity Logger</h2>
+<div id="mainUI" class="container" style="display:none;">
+    <h2>Daily Activity Logger</h2>
 
-  <div class="box">
     <input type="date" id="date">
-    <input type="text" id="time" placeholder="Time Slot (Ex: 2PM - 4PM)">
-    <textarea id="activity" placeholder="What did you do?"></textarea>
-    <br><br>
-    <button onclick="save()">Save</button>
-  </div>
+    <input type="text" id="time" placeholder="Time Slot (ex: 2PM - 4PM)">
+    <textarea id="activity" placeholder="Describe your work"></textarea>
 
-  <h3>Recent Entries</h3>
-  <div id="list"></div>
+    <button onclick="save()">Save Entry</button>
+
+    <h3 style="margin-top:20px;">Recent Entries</h3>
+    <div id="list"></div>
 </div>
 
 <script>
-const api = "https://script.google.com/macros/s/AKfycbzcFcXl7zPs5QTFtlSN8zI6YfT1d9_n_yuiXWQz9tbn--aysn3vGil8jPxhS1ecNf0/exec";
+const API = "https://script.google.com/macros/s/AKfycbzcFcXl7zPs5QTFtlSN8zI6YfT1d9_n_yuiXWQz9tbn--aysn3vGil8jPxhS1ecNf0/exec";
 
 function login() {
-  let code = document.getElementById("code").value;
-
-  fetch(api, {
-    method: "POST",
-    body: new URLSearchParams({
-      action: "login",
-      code: code
+    fetch(API, {
+        method: "POST",
+        body: new URLSearchParams({
+            action: "login",
+            code: document.getElementById("code").value
+        })
     })
-  })
-  .then(r => r.json())
-  .then(d => {
-    if (d.success) {
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("mainUI").style.display = "block";
-      load();
-    } else {
-      document.getElementById("msg").innerText = "❌ Wrong code!";
-    }
-  });
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("mainUI").style.display = "block";
+            load();
+        } else {
+            document.getElementById("msg").innerText = "❌ Wrong code!";
+        }
+    });
 }
 
 function save() {
-  fetch(api, {
-    method: "POST",
-    body: new URLSearchParams({
-      action: "save",
-      date: document.getElementById("date").value,
-      time: document.getElementById("time").value,
-      activity: document.getElementById("activity").value
+    fetch(API, {
+        method: "POST",
+        body: new URLSearchParams({
+            action: "save",
+            date: document.getElementById("date").value,
+            time: document.getElementById("time").value,
+            activity: document.getElementById("activity").value
+        })
     })
-  }).then(() => {
-    alert("Saved!");
-    load();
-  });
+    .then(() => {
+        alert("Saved!");
+        load();
+    });
 }
 
 function load() {
-  fetch(api)
-  .then(r => r.json())
-  .then(data => {
-    let html = "";
-    data.forEach((row, i) => {
-      html += `
-      <div class="entry">
-        <b>${row[1]}</b> | ${row[2]} <br>
-        ${row[3]} <br><br>
-      </div>`;
+    fetch(API)
+    .then(r => r.json())
+    .then(data => {
+        let html = "";
+        data.forEach(row => {
+            html += `
+                <div class="entry">
+                    <b>${row[1]}</b> | ${row[2]}<br>
+                    ${row[3]}
+                </div>
+            `;
+        });
+        document.getElementById("list").innerHTML = html;
     });
-
-    document.getElementById("list").innerHTML = html;
-  });
 }
 </script>
 
